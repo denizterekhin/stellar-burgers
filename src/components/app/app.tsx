@@ -24,7 +24,7 @@ const App = () => {
         <ConstructorPage />
       ) : (
         <div className={`${styles.title} text text_type_main-medium pt-4`}>
-          Нет игредиентов
+          Нет игредиентов добавленое для пуша удалить
         </div>
       )}
     </div>
