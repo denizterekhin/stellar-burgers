@@ -1,79 +1,121 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, nanoid } from '@reduxjs/toolkit';
 import { TConstructorIngredient, TIngredient, TOrder } from '@utils-types';
-import { addIngredient } from '../actions/burgerConstructorAction';
+import { createOrder } from '../actions/burgerConstructorAction';
 
-type TConstructorState = {
-  selectedIngredients: TConstructorIngredient[];
+type TBurgerConstructorState = {
+  constructorItems: {
+    bun: TIngredient | null;
+    ingredients: Array<TConstructorIngredient>;
+  };
+  orderRequest: boolean;
+  orderModalData: TOrder | null;
   loading: boolean;
-  error: string | undefined;
-  orderRequested: boolean;
-  currentOrder: TOrder | null;
+  error: null | string | undefined;
 };
 
-const initialState: TConstructorState = {
-  selectedIngredients: [],
+const initialState: TBurgerConstructorState = {
+  constructorItems: {
+    bun: null,
+    ingredients: []
+  },
+  orderRequest: false,
+  orderModalData: null,
   loading: false,
-  error: undefined,
-  orderRequested: false,
-  currentOrder: null
+  error: null
 };
 
-export const constructorSlice = createSlice({
-  name: 'burgerConstructor',
+type IngredientWithKey = TIngredient & {
+  key: string;
+};
+
+export const burgerConstructorSlice = createSlice({
+  name: 'burgerconstructor',
   initialState,
   reducers: {
-    removeIngredient: (state, action: PayloadAction<string>) => {
-      state.selectedIngredients = state.selectedIngredients.filter(
-        (item) => item.id !== action.payload
-      );
+    addIngredient: {
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        if (action.payload.type === 'bun') {
+          state.constructorItems.bun = action.payload;
+        } else {
+          state.constructorItems.ingredients.push(action.payload);
+        }
+      },
+      prepare: (ingredient: TIngredient) => {
+        const key = nanoid();
+        return { payload: { ...ingredient, id: key } };
+      }
     },
-    moveDown: (state, action: PayloadAction<number>) => {
-      const ingredientToMove = state.selectedIngredients[action.payload + 1];
-      const neighbour = state.selectedIngredients[action.payload + 2];
-      state.selectedIngredients = state.selectedIngredients
-        .with(action.payload + 1, neighbour)
-        .with(action.payload + 2, ingredientToMove);
+    removeIngredient: (
+      state,
+      action: PayloadAction<TConstructorIngredient>
+    ) => {
+      state.constructorItems.ingredients =
+        state.constructorItems.ingredients.filter(
+          (item) => item.id !== action.payload.id
+        );
     },
-    moveUp: (state, action: PayloadAction<number>) => {
-      const ingredientToMove = state.selectedIngredients[action.payload + 1];
-      const neighbour = state.selectedIngredients[action.payload];
-      state.selectedIngredients = state.selectedIngredients
-        .with(action.payload + 1, neighbour)
-        .with(action.payload, ingredientToMove);
+    moveUpIngredient: (state, action: PayloadAction<number>) => {
+      const index = action.payload;
+      if (index > 0) {
+        const ingredients = state.constructorItems.ingredients;
+        [ingredients[index - 1], ingredients[index]] = [
+          ingredients[index],
+          ingredients[index - 1]
+        ];
+      }
     },
-    requestToggle: (state, action: PayloadAction<boolean>) => {
-      state.orderRequested = action.payload;
+    moveDownIngredient: (state, action: PayloadAction<number>) => {
+      const index = action.payload;
+      if (index < state.constructorItems.ingredients.length - 1) {
+        const ingredients = state.constructorItems.ingredients;
+        [ingredients[index + 1], ingredients[index]] = [
+          ingredients[index],
+          ingredients[index + 1]
+        ];
+      }
     },
-    clearSelected: (state) => {
-      state.selectedIngredients = [];
-    },
-    setCurrentOrder: (state, action: PayloadAction<TOrder | null>) => {
-      state.currentOrder = action.payload;
-    }
-  },
-  selectors: {
-    selectedIngredients: (state) => state.selectedIngredients,
-    requestOrderState: (state) => state.orderRequested,
-    currentOrder: (state) => state.currentOrder
+    clearOrder: (state) => initialState
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      addIngredient,
-      (state, action: PayloadAction<TConstructorIngredient>) => {
-        if (action.payload.type === 'bun') {
-          state.selectedIngredients = state.selectedIngredients.filter(
-            (element) => element.type !== 'bun'
-          );
-          state.selectedIngredients.push(action.payload);
-        } else {
-          state.selectedIngredients.push(action.payload);
-        }
-      }
-    );
+    builder
+      .addCase(createOrder.pending, (state) => {
+        state.orderRequest = true;
+        state.error = null;
+      })
+      .addCase(createOrder.rejected, (state, action) => {
+        state.orderRequest = false;
+        state.error = action.error.message;
+      })
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.orderRequest = false;
+        state.orderModalData = action.payload.order;
+        state.constructorItems.bun = null;
+        state.constructorItems.ingredients = [];
+        state.error = null;
+      });
+  },
+  selectors: {
+    getConstructorItems: (state) => state.constructorItems,
+    getOrderRequest: (state) => state.orderRequest,
+    getOrderModalData: (state) => state.orderModalData,
+    getLoading: (state) => state.loading,
+    getError: (state) => state.error
   }
 });
 
-export const { selectedIngredients, requestOrderState, currentOrder } =
-  constructorSlice.selectors;
-export const constructorActions = constructorSlice.actions;
-export const reducer = constructorSlice.reducer;
+export default burgerConstructorSlice;
+export const {
+  addIngredient,
+  removeIngredient,
+  moveUpIngredient,
+  moveDownIngredient,
+  clearOrder
+} = burgerConstructorSlice.actions;
+
+export const {
+  getConstructorItems,
+  getOrderRequest,
+  getOrderModalData,
+  getLoading,
+  getError
+} = burgerConstructorSlice.selectors;

@@ -1,19 +1,18 @@
 import { ProfileUI } from '@ui-pages';
-import { FC, SyntheticEvent, useEffect, useState, useMemo } from 'react';
+import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { selectUser } from '../../services/slices/userSlice';
-import { updateUserInfo } from '../../services/actions/userAction';
+import {
+  selectloginUserRequest,
+  selectUser
+} from '../../services/slices/userSlice';
+import { TUser } from '@utils-types';
+import { updateUser } from '../../services/actions/userAction';
+import { Preloader } from '@ui';
 
 export const Profile: FC = () => {
+  const user = useSelector(selectUser) as TUser;
   const dispatch = useDispatch();
-  const userInfo = useSelector(selectUser);
-  const user = useMemo(
-    () => ({
-      name: userInfo?.name || '',
-      email: userInfo?.email || ''
-    }),
-    [userInfo?.name, userInfo?.email]
-  );
+  const loading = useSelector(selectloginUserRequest);
 
   const [formValue, setFormValue] = useState({
     name: user.name,
@@ -24,19 +23,25 @@ export const Profile: FC = () => {
   useEffect(() => {
     setFormValue((prevState) => ({
       ...prevState,
-      name: user.name || '',
-      email: user.email || ''
+      name: user?.name || '',
+      email: user?.email || ''
     }));
   }, [user]);
 
   const isFormChanged =
-    formValue.name !== user.name ||
-    formValue.email !== user.email ||
+    formValue.name !== user?.name ||
+    formValue.email !== user?.email ||
     !!formValue.password;
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(updateUserInfo(formValue));
+    dispatch(
+      updateUser({
+        name: formValue.name,
+        email: formValue.email,
+        password: formValue.password
+      })
+    );
   };
 
   const handleCancel = (e: SyntheticEvent) => {
@@ -54,6 +59,10 @@ export const Profile: FC = () => {
       [e.target.name]: e.target.value
     }));
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
 
   return (
     <ProfileUI

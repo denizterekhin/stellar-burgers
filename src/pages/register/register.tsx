@@ -1,22 +1,32 @@
 import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
-import { checkUserAuth, registerUser } from '../../services/actions/userAction';
-import { useNavigate } from 'react-router-dom';
-import store, { useDispatch, useSelector } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
+import { selectloginUserRequest } from '../../services/slices/userSlice';
+import { TRegisterData } from '@api';
+import { registerUser } from '../../services/actions/userAction';
+import { Preloader } from '@ui';
 
 export const Register: FC = () => {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const loading = useSelector(selectloginUserRequest);
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(
-      registerUser({ email: email, name: userName, password: password })
-    );
+    const newUserData: TRegisterData = {
+      name: userName,
+      email: email,
+      password: password
+    };
+    dispatch(registerUser(newUserData));
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
 
   return (
     <RegisterUI

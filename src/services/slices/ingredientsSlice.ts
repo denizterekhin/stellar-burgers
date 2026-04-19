@@ -1,53 +1,44 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { TIngredient } from '@utils-types';
 import { getIngredients } from '../actions/ingredientsAction';
 
-type TBurgerState = {
-  ingredients: TIngredient[];
-  current?: TIngredient;
-  loading: boolean;
-  error: string | undefined;
+type TIngredientsState = {
+  ingredients: Array<TIngredient>;
+  isIngredientsLoading: boolean;
+  error: string | null | undefined;
 };
 
-const initialState: TBurgerState = {
+const initialState: TIngredientsState = {
   ingredients: [],
-  loading: false,
-  error: undefined
+  isIngredientsLoading: false,
+  error: null
 };
 
-export const burgerSlice = createSlice({
-  name: 'burger',
+export const ingredientsSlice = createSlice({
+  name: 'ingredients',
   initialState,
-  reducers: {
-    selectIngredient: (state, action: PayloadAction<string>) => {
-      state.current = state.ingredients.find(
-        (element) => element._id === action.payload
-      );
-    }
-  },
-  selectors: {
-    ingredients: (state) => state.ingredients,
-    currentIngredient: (state) => state.current,
-    isIngredientsLoading: (state) => state.loading
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getIngredients.pending, (state) => {
-        state.loading = true;
-        state.error = undefined;
+        state.isIngredientsLoading = true;
+        state.error = null;
       })
       .addCase(getIngredients.rejected, (state, action) => {
-        state.loading = false;
+        state.isIngredientsLoading = false;
         state.error = action.error.message;
       })
       .addCase(getIngredients.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isIngredientsLoading = false;
         state.ingredients = action.payload;
       });
+  },
+  selectors: {
+    getIngredientsWithSelector: (state) => state.ingredients,
+    getLoadingStatus: (state) => state.isIngredientsLoading
   }
 });
 
-export const { ingredients, currentIngredient, isIngredientsLoading } =
-  burgerSlice.selectors;
-export const burgerActions = burgerSlice.actions;
-export const reducer = burgerSlice.reducer;
+export default ingredientsSlice;
+export const { getIngredientsWithSelector, getLoadingStatus } =
+  ingredientsSlice.selectors;

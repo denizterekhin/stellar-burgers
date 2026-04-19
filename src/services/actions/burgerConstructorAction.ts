@@ -1,31 +1,10 @@
-import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { orderBurgerApi } from '../../utils/burger-api';
-import { constructorActions } from '../slices/burgerConstructorSlice';
-import { getFeeds } from './orderAction';
-import { TIngredient } from '../../utils/types';
-import { v4 as uuidv4 } from 'uuid';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { orderBurgerApi } from '@api';
 
-export const addIngredient = createAction(
-  'ingredients/add',
-  function prepare(item: TIngredient) {
-    return {
-      payload: {
-        ...item,
-        id: uuidv4()
-      }
-    };
-  }
-);
-
-export const postOrder = createAsyncThunk(
-  'order/post',
-  async (ingredients: string[], { dispatch }) => {
-    orderBurgerApi(ingredients).then((orderResponse) => {
-      console.log(orderResponse.name);
-      dispatch(constructorActions.clearSelected());
-      dispatch(constructorActions.setCurrentOrder(orderResponse.order));
-      dispatch(constructorActions.requestToggle(false));
-      dispatch(getFeeds());
-    });
+export const createOrder = createAsyncThunk(
+  'order/createOrder',
+  async (data: string[]) => {
+    const response = await orderBurgerApi(data);
+    return response;
   }
 );

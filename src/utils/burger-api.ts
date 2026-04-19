@@ -47,7 +47,7 @@ export const fetchWithRefresh = async <T>(
       const refreshData = await refreshToken();
       if (options.headers) {
         (options.headers as { [key: string]: string }).authorization =
-          localStorage.getItem('accessToken')!;
+          refreshData.accessToken;
       }
       const res = await fetch(url, options);
       return await checkResponse<T>(res);
@@ -92,7 +92,7 @@ export const getOrdersApi = () =>
     method: 'GET',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: localStorage.getItem('accessToken')
+      authorization: getCookie('accessToken')
     } as HeadersInit
   }).then((data) => {
     if (data?.success) return data.orders;
@@ -118,8 +118,8 @@ type TNewOrder = {
 };
 
 type TNewOrderResponse = TServerResponse<{
+  //order: TNewOrder;
   order: TOrder;
-  // order: TNewOrder;
   name: string;
 }>;
 
@@ -128,7 +128,7 @@ export const orderBurgerApi = (data: string[]) =>
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: localStorage.getItem('accessToken')
+      authorization: getCookie('accessToken')
     } as HeadersInit,
     body: JSON.stringify({
       ingredients: data
@@ -172,11 +172,7 @@ export const registerUserApi = (data: TRegisterData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) {
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('accessToken', data.accessToken);
-        return data.user;
-      }
+      if (data?.success) return data;
       return Promise.reject(data);
     });
 
@@ -195,13 +191,7 @@ export const loginUserApi = (data: TLoginData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) {
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('accessToken', data.accessToken);
-        return data.user;
-      }
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('accessToken');
+      if (data?.success) return data;
       return Promise.reject(data);
     });
 
@@ -238,8 +228,7 @@ type TUserResponse = TServerResponse<{ user: TUser }>;
 export const getUserApi = () =>
   fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     headers: {
-      // authorization: getCookie('accessToken')
-      authorization: localStorage.getItem('accessToken')
+      authorization: getCookie('accessToken')
     } as HeadersInit
   });
 
@@ -248,8 +237,7 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      // authorization: getCookie('accessToken')
-      authorization: localStorage.getItem('accessToken')
+      authorization: getCookie('accessToken')
     } as HeadersInit,
     body: JSON.stringify(user)
   });
@@ -264,5 +252,3 @@ export const logoutApi = () =>
       token: localStorage.getItem('refreshToken')
     })
   }).then((res) => checkResponse<TServerResponse<{}>>(res));
-
-export const isTokenExists = () => localStorage.getItem('accessToken') !== null;
