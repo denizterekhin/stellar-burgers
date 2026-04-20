@@ -3,11 +3,11 @@ import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
-import {
-  clearOrder,
+import burgerConstructorSlice, {
   getConstructorItems,
   getOrderModalData,
-  getOrderRequest
+  getOrderRequest,
+  closeModalData
 } from '../../services/slices/burgerConstructorSlice';
 import { createOrder } from '../../services/actions/burgerConstructorAction';
 import { selectIsAuthenticated } from '../../services/slices/userSlice';
@@ -43,7 +43,8 @@ export const BurgerConstructor: FC = () => {
 
   // обработка закрытия модального окна заказа
   const closeOrderModal = () => {
-    dispatch(clearOrder());
+    dispatch(closeModalData());
+    //dispatch(clearOrder());
     navigate('/');
   };
 

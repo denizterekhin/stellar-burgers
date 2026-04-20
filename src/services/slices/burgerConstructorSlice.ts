@@ -74,6 +74,10 @@ export const burgerConstructorSlice = createSlice({
         ];
       }
     },
+    closeModalData: (state) => {
+      state.orderModalData = null;
+      state.orderRequest = false;
+    },
     clearOrder: (state) => initialState
   },
   extraReducers: (builder) => {
@@ -109,7 +113,8 @@ export const {
   removeIngredient,
   moveUpIngredient,
   moveDownIngredient,
-  clearOrder
+  clearOrder,
+  closeModalData
 } = burgerConstructorSlice.actions;
 
 export const {
