@@ -118,7 +118,8 @@ type TNewOrder = {
 };
 
 type TNewOrderResponse = TServerResponse<{
-  order: TNewOrder;
+  //order: TNewOrder;
+  order: TOrder;
   name: string;
 }>;
 
