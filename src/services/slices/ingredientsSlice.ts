@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { TIngredient } from '@utils-types';
 import { getIngredients } from '../actions/ingredientsAction';
 
-type TIngredientsState = {
+export type TIngredientsState = {
   ingredients: Array<TIngredient>;
   isIngredientsLoading: boolean;
   error: string | null | undefined;

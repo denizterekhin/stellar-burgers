@@ -2,7 +2,7 @@ import { TOrder } from '@utils-types';
 import { createSlice } from '@reduxjs/toolkit';
 import { getFeedData, getOrderByNum } from '../actions/feedAction';
 
-type TStateFeed = {
+export type TStateFeed = {
   orders: TOrder[];
   total: number;
   totalToday: number;

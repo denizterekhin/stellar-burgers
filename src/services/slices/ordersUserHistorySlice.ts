@@ -2,7 +2,7 @@ import { TOrder } from '@utils-types';
 import { ordersHistory } from '../actions/ordersUserHistoryAction';
 import { createSlice } from '@reduxjs/toolkit';
 
-type TStateOrderUserHistory = {
+export type TStateOrderUserHistory = {
   orders: TOrder[];
   loading: boolean;
   error: null | string | undefined;
